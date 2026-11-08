@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Money Dashboard</title>
+<title>Money Dashboard - Connected</title>
 <style>
   :root {
     --bg-color: #000000;
@@ -41,9 +41,23 @@
   .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
   .input-group input { width: 100%; background: #000; border: 1px solid #333; border-radius: 12px; padding: 12px; color: #fff; font-size: 1rem; font-weight: 600; }
 
+  .sync-btn {
+    width: 100%;
+    background-color: #222;
+    color: var(--accent-green);
+    border: 1px solid rgba(0, 214, 50, 0.3);
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+  }
+  .sync-btn:hover { background-color: #333; }
+
   .bento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
   .bento-card { background-color: var(--card-bg); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; }
-  .card-header { display: flex; justify-content: space-between; align-items: center; }
   .card-title { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
   .card-footer-val { font-size: 1.15rem; font-weight: 700; margin-top: 8px; }
 
@@ -77,6 +91,8 @@
         <label>Enter Weekly Commission / Paycheck</label>
         <input type="number" id="weeklyPay" value="1500" oninput="calculateBudget()">
       </div>
+
+      <button class="sync-btn" onclick="openGoogleSheet()">📊 Open Connected Google Sheet</button>
     </div>
 
     <!-- Bento Grid Summary -->
@@ -122,6 +138,10 @@
 
       document.getElementById('displayMonthlyIncome').innerText = '$' + monthlyIncome.toLocaleString('en-US', {minimumFractionDigits: 2});
       document.getElementById('displaySurplus').innerText = '$' + surplus.toLocaleString('en-US', {minimumFractionDigits: 2});
+    }
+
+    function openGoogleSheet() {
+      window.open('https://docs.google.com/spreadsheets/d/1rblsbJuP-OQR3RpnT9EwgGq8ELdJj_ZA5UhiKPrZtOM/edit?usp=drivesdk', '_blank');
     }
 
     calculateBudget();
