@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Dashboard</title>
+<style>
+  :root {
+    --bg-color: #000000;
+    --card-bg: #161616;
+    --card-hover: #222222;
+    --text-main: #ffffff;
+    --text-muted: #888888;
+    --accent-green: #00d632;
+    --accent-blue: #00bfff;
+    --accent-purple: #9370db;
+    --accent-teal: #14b8a6;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 20px 16px 90px 16px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .app-container {
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+
+  .balance-section {
+    background-color: var(--card-bg);
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .balance-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .section-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .action-link {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .balance-amount {
+    font-size: 2.3rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+  }
+
+  .balance-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .btn-action {
+    background-color: #222222;
+    color: var(--text-main);
+    border: none;
+    border-radius: 28px;
+    padding: 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .btn-action:hover { background-color: #333333; }
+
+  .bento-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .bento-card {
+    background-color: var(--card-bg);
+    border-radius: 24px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 130px;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .card-arrow {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .card-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+  }
+
+  .icon-savings { background: rgba(0, 214, 50, 0.15); color: var(--accent-green); }
+  .icon-btc { background: rgba(0, 191, 255, 0.15); color: var(--accent-blue); }
+
+  .card-footer-val {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .card-footer-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .section-card {
+    background-color: var(--card-bg);
+    border-radius: 24px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .section-card h3 {
+    margin-top: 0;
+    font-size: 1.05rem;
+    margin-bottom: 16px;
+    color: var(--text-main);
+  }
+
+  .bill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.9rem;
+  }
+
+  .bill-row:last-child { border-bottom: none; }
+  .bill-label { color: var(--text-muted); }
+  .bill-val { font-weight: 600; color: var(--text-main); }
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #000000;
+    border-top: 1px solid #161616;
+    display: flex;
+    justify-content: space-around;
+    padding: 14px 0 26px 0;
+    z-index: 100;
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .nav-item.active { color: var(--text-main); font-weight: bold; }
+</style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="header">
+      <h1>Money</h1>
+      <div class="profile-avatar">DM</div>
+    </div>
+
+    <div class="balance-section">
+      <div class="balance-top-row">
+        <span class="section-label">Available Surplus Balance</span>
+        <a href="#" class="action-link">Weekly Pay &gt;</a>
+      </div>
+      <div class="balance-amount" id="displayBalance">$1,250.00</div>
+      
+      <div class="balance-buttons">
+        <button class="btn-action" onclick="logWeeklyPay()">+ Add Friday Pay</button>
+        <button class="btn-action" onclick="logDailyExpense()">- Log Expense</button>
+      </div>
+    </div>
+
+    <div class="bento-grid">
+      <div class="bento-card">
+        <div class="card-header">
+          <span class="card-title">Savings</span>
+          <span class="card-arrow">&gt;</span>
+        </div>
+        <div>
+          <div class="card-icon icon-savings">$</div>
+          <div class="card-footer-val">$500.00</div>
+          <div class="card-footer-desc">Emergency Fund</div>
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <div class="card-header">
+          <span class="card-title">Investments</span>
+          <span class="card-arrow">&gt;</span>
+        </div>
+        <div>
+          <div class="card-icon icon-btc">📈</div>
+          <div class="card-footer-val">$200.00</div>
+          <div class="card-footer-desc">Long-term growth</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h3>Monthly Fixed Expenses</h3>
+      <div class="bill-row">
+        <span class="bill-label">Rent / Mortgage</span>
+        <span class="bill-val">$2,150.00</span>
+      </div>
+      <div class="bill-row">
+        <span class="bill-label">Utilities (Gas/Water/Power)</span>
+        <span class="bill-val">$50.00</span>
+      </div>
+      <div class="bill-row">
+        <span class="bill-label">Internet Bill</span>
+        <span class="bill-val">$75.00</span>
+      </div>
+      <div class="bill-row">
+        <span class="bill-label">Cellphone Bill</span>
+        <span class="bill-val">$65.00</span>
+      </div>
+      <div class="bill-row">
+        <span class="bill-label">Food & Groceries</span>
+        <span class="bill-val">$800.00</span>
+      </div>
+      <div class="bill-row">
+        <span class="bill-label">Transportation & Transit</span>
+        <span class="bill-val">$120.00</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active">$</button>
+    <button class="nav-item">💳</button>
+    <button class="nav-item">📊</button>
+    <button class="nav-item">🔍</button>
+    <button class="nav-item">🕒</button>
+  </nav>
+
+  <script>
+    function logWeeklyPay() {
+      let pay = prompt("Enter Friday commission/paycheck amount:", "1000");
+      if (pay && !isNaN(pay)) {
+        alert("Added $" + pay + " to your income allocation!");
+      }
+    }
+
+    function logDailyExpense() {
+      let exp = prompt("Enter daily expense amount:", "25");
+      if (exp && !isNaN(exp)) {
+        alert("Logged $" + exp + " expense.");
+      }
+    }
+  </script>
+</body>
+</html>
