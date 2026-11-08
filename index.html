@@ -1,150 +1,225 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Money Dashboard - Connected</title>
+<html lang="en"><head><meta charset="utf-8"><title>Monthly Budget Planner</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0e7c5a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Budget">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root {
-    --bg-color: #000000;
-    --card-bg: #161616;
-    --card-hover: #222222;
-    --text-main: #ffffff;
-    --text-muted: #888888;
-    --accent-green: #00d632;
-    --accent-blue: #00bfff;
-    --accent-purple: #9370db;
-    --accent-teal: #14b8a6;
-  }
-  * { box-sizing: border-box; }
-  body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding: 20px 16px 90px 16px;
-    display: flex;
-    justify-content: center;
-    min-height: 100vh;
-  }
-  .app-container { max-width: 480px; width: 100%; }
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-  .header h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
-  .profile-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: bold; }
-  
-  .balance-section { background-color: var(--card-bg); border-radius: 24px; padding: 24px; margin-bottom: 20px; }
-  .balance-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .section-label { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
-  .balance-amount { font-size: 2.3rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
-  
-  .input-group { margin-bottom: 16px; }
-  .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
-  .input-group input { width: 100%; background: #000; border: 1px solid #333; border-radius: 12px; padding: 12px; color: #fff; font-size: 1rem; font-weight: 600; }
+:root{--bg:#f3f4f2;--card:#fff;--tx:#161b18;--mu:#6c7670;--ac:#1faa7a;--bd:#e6e8e4;--chip:#eaf3ee;--bad:#d64545;--bar:rgba(255,255,255,.92);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c0f0e;--card:#171c1a;--tx:#eef2ef;--mu:#8e9a93;--ac:#2fd49b;--bd:#262d29;--chip:#212926;--bad:#ff7b6b;--bar:rgba(23,28,26,.92);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0c0f0e;--card:#171c1a;--tx:#eef2ef;--mu:#8e9a93;--ac:#2fd49b;--bd:#262d29;--chip:#212926;--bad:#ff7b6b;--bar:rgba(23,28,26,.92);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px 16px 110px}
+.v{display:none}.v.on{display:block}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;z-index:6;display:none;box-shadow:0 6px 24px rgba(0,0,0,.25)}#toast.on{display:block}#toast.bad{border-color:var(--bad)}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}.top h1{font-size:24px;margin:0;flex:1}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:16px;margin-bottom:12px}
+h2{font-size:16px;margin:0 0 12px}
+.hero{background:linear-gradient(135deg,#0e7c5a,#1faa7a);color:#fff;border:0;padding:20px}
+.hero small{opacity:.85}.hero .big{font-size:38px;font-weight:700;letter-spacing:-1px;margin:2px 0 14px}
+.pills{display:flex;gap:10px}.pill{flex:1;display:flex;justify-content:center;align-items:center;gap:8px;border:0;border-radius:999px;padding:12px;background:rgba(255,255,255,.2);color:#fff;font-weight:600}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.grid .card{margin:0}
+.t small{color:var(--mu);display:flex;align-items:center;gap:6px}.t b{font-size:20px;display:block;margin-top:6px}
+.chip{width:38px;height:38px;border-radius:12px;background:var(--chip);color:var(--ac);display:flex;align-items:center;justify-content:center;flex:none}
+input,select,button{font:inherit;color:var(--tx);background:var(--chip);border:1px solid transparent;border-radius:12px;padding:10px 12px;min-width:0}
+input:focus,select:focus{outline:2px solid var(--ac)}input{flex:1 1 90px}button{cursor:pointer}
+.btn{background:var(--ac);color:#fff;font-weight:600;border-radius:999px;padding:11px 18px;display:inline-flex;gap:8px;align-items:center}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fx{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)}.fx:last-child{border:0}
+.fx .n{flex:1 1 120px}.fx .pc{flex:1 1 80px;text-align:right}
+.mu{color:var(--mu);font-size:13px}.x{background:none;color:var(--mu);padding:6px}.bad{color:var(--bad)}.ok{color:var(--ac)}
+.g{display:flex;gap:10px;align-items:center;padding:8px 0}.g>div{flex:1}.bar{height:7px;background:var(--bd);border-radius:4px;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:var(--ac)}.bar i.o{background:var(--bad)}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:var(--bar);backdrop-filter:blur(14px);border-top:1px solid var(--bd);padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));z-index:5}
+.tabs button{background:none;border:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mu);padding:4px 10px;flex:1;max-width:96px}.tabs button.on{color:var(--ac);font-weight:600}
+</style></head><body><main>
+<div class="top"><h1>Budget</h1><span class="mu" id="sync"></span><input type="month" id="mo" style="flex:0 1 150px"></div>
 
-  .sync-btn {
-    width: 100%;
-    background-color: #222;
-    color: var(--accent-green);
-    border: 1px solid rgba(0, 214, 50, 0.3);
-    border-radius: 14px;
-    padding: 12px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: background 0.2s;
-  }
-  .sync-btn:hover { background-color: #333; }
+<section class="v on" id="v-home">
+<div class="card hero"><small>Left over this month</small><div class="big" id="hLeft"></div>
+<div id="hSub" style="margin:-8px 0 14px;opacity:.9"></div>
+<div class="pills"><button class="pill" id="goSpend" data-ic="plus">Add expense</button><button class="pill" id="xl" data-ic="down">Excel report</button></div></div>
+<div class='card'><h2>Safe to spend this week</h2><div id='sts'></div></div>
+<div class="grid">
+<div class="card t"><small data-ic="wallet">Made</small><b id="tInc"></b></div>
+<div class="card t"><small data-ic="card">Spent</small><b id="tSp"></b></div>
+<div class="card t"><small data-ic="coin">Saved</small><b id="tSv"></b></div>
+<div class="card t"><small data-ic="target">Goals hit</small><b id="tG"></b></div></div>
+<div class='card'><h2>Coming up</h2><div id='gUp'></div></div>
+<div class="card"><h2>Your goals</h2><div id="gHome"></div></div>
+<div class='card'><h2>Backup</h2><p class='mu' style='margin:0 0 10px'>Save your data to a file, and load it on another phone or computer.</p><div class='row'><button class='btn' id='bk'>Save backup</button><button class='btn' id='rs' style='background:var(--chip);color:var(--tx)'>Restore backup</button></div><input type='file' id='rf' accept='.json,application/json' hidden></div>
+</section>
 
-  .bento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-  .bento-card { background-color: var(--card-bg); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; }
-  .card-title { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
-  .card-footer-val { font-size: 1.15rem; font-weight: 700; margin-top: 8px; }
+<section class="v" id="v-pay">
+<div class="card"><h2>Friday pay</h2><div class="row"><label class="mu">Usual weekly pay</label><input type="number" id="pay" min="0" step="any" placeholder="0.00"></div>
+<p class="mu" style="margin:12px 0 2px">Paydays this month. Change one if a check was different.</p><div id="fri"></div></div>
+</section>
 
-  .section-card { background-color: var(--card-bg); border-radius: 24px; padding: 20px 24px; margin-bottom: 20px; }
-  .section-card h3 { margin-top: 0; font-size: 1.05rem; margin-bottom: 16px; color: var(--text-main); }
-  .bill-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #222; font-size: 0.9rem; }
-  .bill-row:last-child { border-bottom: none; }
-  .bill-label { color: var(--text-muted); }
-  .bill-val { font-weight: 600; color: var(--text-main); }
+<section class="v" id="v-bills">
+<div class="card"><h2>Fixed payments</h2><div id="fx"></div><div class="row" style="margin-top:12px"><button class="btn" id="addFx" data-ic="plus">Add payment</button></div></div>
+<div class="grid"><div class="card t"><small>Set aside per check</small><b id="bPer"></b></div><div class="card t"><small>Free per check</small><b id="bFree"></b></div></div>
+<p class="mu">Monthly bills are spread across weekly checks (monthly amount × 12 ÷ 52).</p>
+</section>
 
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: #000000; border-top: 1px solid #161616; display: flex; justify-content: space-around; padding: 14px 0 26px 0; z-index: 100; }
-  .nav-item { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
-  .nav-item.active { color: var(--text-main); font-weight: bold; }
-</style>
-</head>
-<body>
-  <div class="app-container">
-    <div class="header">
-      <h1>Money</h1>
-      <div class="profile-avatar">DM</div>
-    </div>
+<section class="v" id="v-spend">
+<div class="card"><h2>Extra spending</h2><div class="row">
+<input id="eN" placeholder="What for?"><input id="eA" type="number" min="0" step="any" placeholder="Amount"><input id="eD" type="date" style="flex:0 1 150px"><button class="btn" id="add" data-ic="plus">Add</button></div>
+<div id="list" style="margin-top:10px"></div></div>
+</section>
 
-    <!-- Live Income & Balance Tracker -->
-    <div class="balance-section">
-      <div class="balance-top-row">
-        <span class="section-label">Estimated Monthly Surplus</span>
-      </div>
-      <div class="balance-amount" id="displaySurplus">$0.00</div>
-      
-      <div class="input-group">
-        <label>Enter Weekly Commission / Paycheck</label>
-        <input type="number" id="weeklyPay" value="1500" oninput="calculateBudget()">
-      </div>
-
-      <button class="sync-btn" onclick="openGoogleSheet()">📊 Open Connected Google Sheet</button>
-    </div>
-
-    <!-- Bento Grid Summary -->
-    <div class="bento-grid">
-      <div class="bento-card">
-        <div class="card-title">Monthly Income</div>
-        <div class="card-footer-val" id="displayMonthlyIncome">$6,000.00</div>
-      </div>
-      <div class="bento-card">
-        <div class="card-title">Fixed Bills Total</div>
-        <div class="card-footer-val" id="displayFixedBills" style="color: #ff5252;">$3,260.00</div>
-      </div>
-    </div>
-
-    <!-- Fixed Monthly Essentials -->
-    <div class="section-card">
-      <h3>Monthly Fixed Expenses</h3>
-      <div class="bill-row"><span class="bill-label">Rent / Mortgage</span><span class="bill-val">$2,150.00</span></div>
-      <div class="bill-row"><span class="bill-label">Utilities (Gas/Water/Power)</span><span class="bill-val">$50.00</span></div>
-      <div class="bill-row"><span class="bill-label">Internet Bill</span><span class="bill-val">$75.00</span></div>
-      <div class="bill-row"><span class="bill-label">Cellphone Bill</span><span class="bill-val">$65.00</span></div>
-      <div class="bill-row"><span class="bill-label">Food & Groceries</span><span class="bill-val">$800.00</span></div>
-      <div class="bill-row"><span class="bill-label">Transportation & Transit</span><span class="bill-val">$120.00</span></div>
-    </div>
-  </div>
-
-  <nav class="bottom-nav">
-    <button class="nav-item active">$</button>
-    <button class="nav-item">💳</button>
-    <button class="nav-item">📊</button>
-    <button class="nav-item">🔍</button>
-    <button class="nav-item">🕒</button>
-  </nav>
-
-  <script>
-    const fixedBillsTotal = 2150 + 50 + 75 + 65 + 800 + 120; // $3,260
-    document.getElementById('displayFixedBills').innerText = '$' + fixedBillsTotal.toLocaleString('en-US', {minimumFractionDigits: 2});
-
-    function calculateBudget() {
-      let weekly = parseFloat(document.getElementById('weeklyPay').value) || 0;
-      let monthlyIncome = weekly * 4;
-      let surplus = monthlyIncome - fixedBillsTotal;
-
-      document.getElementById('displayMonthlyIncome').innerText = '$' + monthlyIncome.toLocaleString('en-US', {minimumFractionDigits: 2});
-      document.getElementById('displaySurplus').innerText = '$' + surplus.toLocaleString('en-US', {minimumFractionDigits: 2});
-    }
-
-    function openGoogleSheet() {
-      window.open('https://docs.google.com/spreadsheets/d/1rblsbJuP-OQR3RpnT9EwgGq8ELdJj_ZA5UhiKPrZtOM/edit?usp=drivesdk', '_blank');
-    }
-
-    calculateBudget();
-  </script>
-</body>
-</html>
+<section class="v" id="v-goals">
+<div class="card hero"><small>Total saved</small><div class="big" id="svTot"></div><div id="svSub" style="margin:-8px 0 0;opacity:.9"></div></div>
+<div class="card"><h2>Add savings</h2><div class="row"><input id="dA" type="number" min="0" step="any" placeholder="Amount"><input id="dD" type="date" style="flex:0 1 150px"><button class="btn" id="dAdd">Add</button></div>
+<div class="row" style="margin-top:10px"><button class="btn" id="dPlan" style="background:var(--chip);color:var(--tx)">Log planned amount</button><span class="mu" id="dPlanT"></span></div>
+<label class="row mu" style="margin-top:10px"><input type="checkbox" id="auto" style="flex:none;width:18px;height:18px"> Auto-log my planned savings every Friday</label></div>
+<div class="card"><h2>Savings goals</h2>
+<div class="row" style="margin-bottom:8px"><label class="mu" style="flex:1 1 100%">Already saved before you started tracking</label><input type="number" id="svBal" min="0" step="any" placeholder="Starting balance"></div>
+<div class="row" style="margin-bottom:8px"><label class="mu" style="flex:1 1 100%">Save this much each month</label><input type="number" id="gM" min="0" step="any" placeholder="Monthly target"></div>
+<div class="row"><label class="mu" style="flex:1 1 100%">Big goal: amount and date (date is optional)</label><input type="number" id="gT" min="0" step="any" placeholder="Target amount"><input type="date" id="gBy" style="flex:0 1 150px" aria-label="Target date"></div>
+<p class="mu" id="gOut" style="margin:10px 0 0"></p></div>
+<div class="card"><h2>This month</h2><div id="gList"></div></div>
+<div class='card'><h2>What if I save more?</h2><div class='row'><input type='range' id='wi' min='0' max='200' step='5' value='25' aria-label='Extra savings per week' style='flex:1 1 150px;padding:0;background:none;border:0'><b id='wiV'></b></div><p class='mu' id='wiOut' style='margin:8px 0 0'></p></div>
+<div class="card"><h2>Savings history</h2><div id="svList"></div></div>
+</section>
+</main>
+<div id="toast" role="status"></div>
+<nav class="tabs" id="tabs"></nav>
+<script>
+const P={home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',wifi:'<path d="M5 12.55a11 11 0 0 1 14 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>',dumb:'<path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/>',phone:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',coin:'<circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.4 0-2.5.7-2.5 1.8 0 2.6 5 1.2 5 3.7 0 1.1-1.1 1.8-2.5 1.8-1.1 0-2-.4-2.6-1.2M12 6.5V8M12 16v1.5"/>',food:'<path d="M4 3v7a3 3 0 0 0 3 3v8M7 3v7M10 3v7M17 21V3c-2.5 1.5-4 4-4 8h4"/>',zap:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',bus:'<rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16M8 21v-4M16 21v-4M8 14h.01M16 14h.01"/>',tag:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01"/>',wallet:'<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M16 15h2"/>',card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',plus:'<path d="M12 5v14M5 12h14"/>',down:'<path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/>',x:'<path d="M18 6 6 18M6 6l12 12"/>',check:'<path d="M20 6 9 17l-5-5"/>'};
+const ic=(k,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[k]||P.tag}</svg>`;
+const kind=n=>/rent|home|mortgage/i.test(n)?"home":/internet|wifi/i.test(n)?"wifi":/gym|fit/i.test(n)?"dumb":/cell|phone|mobile/i.test(n)?"phone":/saving/i.test(n)?"coin":/food|grocer/i.test(n)?"food":/hydro|electric|power/i.test(n)?"zap":/transit|bus|gas|car/i.test(n)?"bus":"tag";
+const DEF=[["Rent",0,"m"],["Internet",0,"m"],["Gym",0,"m"],["Cellphone",0,"m"],["Savings",0,"w"],["Food",0,"w"],["Hydro",0,"m"],["Transit",0,"m"]];
+const ds=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");let S,ref=null,view="home",mon=ds(new Date()).slice(0,7);
+const $=id=>document.getElementById(id),f=n=>"$"+(+n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const LK="budget-planner-v2";
+function norm(o){o=Object.assign({pay:0,ov:{},fixed:null,exp:[],goal:{}},o||{});if(!o.fixed)o.fixed=DEF.map((x,i)=>({id:"d"+i,n:x[0],a:x[1],f:x[2]}));if(!o.sav)o.sav={bal:+o.goal.s||0,dep:[],auto:true,last:null};if(!Array.isArray(o.sav.dep))o.sav.dep=[];return o}
+function lsGet(){try{return JSON.parse(localStorage.getItem(LK))}catch(e){return null}}
+let lsOk=false;function lsSet(){try{localStorage.setItem(LK,JSON.stringify(S));lsOk=true}catch(e){lsOk=false}}
+let t=null,dirty=false,tt,ready=false;function toast(m,bad){const e=$("toast");e.textContent=m;e.className="on"+(bad?" bad":"");clearTimeout(tt);tt=setTimeout(()=>{e.className=""},7000)}
+function save(){dirty=true;lsSet();clearTimeout(t);$("sync").className="mu"+(!ref&&!lsOk?" bad":"");$("sync").textContent=ref?"Saving…":lsOk?"Saved on this device":"Not saved";t=setTimeout(()=>{if(!ref)return;ref.set({json:JSON.stringify(S)}).then(()=>{$("sync").className="mu ok";$("sync").textContent="Saved ✓"}).catch(()=>{$("sync").className="mu bad";$("sync").textContent=lsOk?"Not synced (kept on this device)":"Not saved"})},400)}
+function fridays(m){const [y,mo]=m.split("-").map(Number),n=new Date(y,mo,0).getDate(),o=[];for(let d=1;d<=n;d++)if(new Date(y,mo-1,d).getDay()===5)o.push(m+"-"+String(d).padStart(2,"0"));return o}
+const payOn=d=>S.ov[d]!==undefined?S.ov[d]:(+S.pay||0);
+const weq=i=>i.f==="w"?+i.a||0:(+i.a||0)*12/52;
+function renderUp(){const el=$('gUp'),t0=new Date();t0.setHours(0,0,0,0);
+const any=S.fixed.some(i=>i.f==='m'&&+i.due>0);
+const L=S.fixed.filter(i=>i.f==='m'&&+i.due>0&&+i.a>0).map(i=>{const y=t0.getFullYear(),m=t0.getMonth(),mk=(yy,mm)=>new Date(yy,mm,Math.min(+i.due,new Date(yy,mm+1,0).getDate()));let d=mk(y,m);if(d<t0)d=mk(y,m+1);return{i,k:Math.round((d-t0)/864e5)}}).filter(x=>x.k<=7).sort((a,b)=>a.k-b.k);
+el.innerHTML=L.length?'':`<p class='mu' style='margin:0'>${any?'Nothing due in the next 7 days.':'Add a due day to your monthly bills on the Bills tab to see them here.'}</p>`;
+L.forEach(x=>{const r=document.createElement('div');r.className='g';r.innerHTML=`<span class='chip'>${ic(kind(x.i.n))}</span><div><div class='n1'></div><div class='mu'>${x.k===0?'Due today':x.k===1?'Due tomorrow':'Due in '+x.k+' days'}</div></div><b>${f(x.i.a)}</b>`;r.querySelector('.n1').textContent=x.i.n;el.appendChild(r)})}
+function renderSts(){const el=$('sts'),n=new Date();n.setHours(0,0,0,0);
+const e0=(n.getDay()+2)%7,st=new Date(n);st.setDate(n.getDate()-e0);const en=new Date(st);en.setDate(st.getDate()+6);
+const a=ds(st),b=ds(en);
+if(!(+S.pay||S.ov[a]!==undefined)){el.innerHTML=`<p class='mu' style='margin:0'>Enter your weekly pay on the Pay tab to see this.</p>`;return}
+const free=payOn(a)-S.fixed.reduce((s,i)=>s+weq(i),0),sp=S.exp.filter(e=>e.d>=a&&e.d<=b).reduce((s,e)=>s+e.a,0),left=free-sp,dl=7-e0,pace=sp/(e0+1)*7;
+el.innerHTML=`<div class='${left<0?'bad':''}' style='font-size:30px;font-weight:700;letter-spacing:-1px'>${f(left)}</div><div class='mu'>left until payday (${dl} ${dl===1?'day':'days'}) · about ${f(Math.max(0,left)/dl)} per day</div><div class='bar'><i class='${left<0?'o':''}' style='width:${free>0?Math.min(100,sp/free*100):100}%'></i></div><div class='mu'>${f(sp)} spent of ${f(free)} free this pay week</div>`+(left<0?`<p class='bad' style='margin:8px 0 0'>You are ${f(-left)} over this week.</p>`:sp>0&&pace>free?`<p class='bad' style='margin:8px 0 0'>At this pace you could overspend by ${f(pace-free)} before payday.</p>`:'')}
+function totSaved(){return (+S.sav.bal||0)+S.sav.dep.reduce((a,d)=>a+d.a,0)}
+function planned(){return S.fixed.filter(i=>/saving/i.test(i.n)).reduce((a,i)=>a+weq(i),0)}
+function lastFri(){const n=new Date();n.setHours(0,0,0,0);n.setDate(n.getDate()-(n.getDay()+2)%7);return ds(n)}
+function autoLog(){const A=S.sav;if(!ready||!A.auto)return;const lf=lastFri();
+if(!A.last){A.last=lf;save();return}
+let ch=false;const p=planned();
+for(let d=new Date(A.last+'T00:00:00');;){d.setDate(d.getDate()+7);const k=ds(d);if(k>lf)break;if(p>0&&!A.dep.some(x=>x.id==='a'+k))A.dep.push({id:'a'+k,d:k,a:+p.toFixed(2),auto:1});A.last=k;ch=true}
+if(ch)save()}
+function renderSav(){const A=S.sav,tot=totSaved(),t=+S.goal.t||0,pl=planned();
+$('svTot').textContent=f(tot);
+$('svSub').textContent=t?Math.min(100,Math.round(tot/t*100))+'% of your '+f(t)+' goal':'Set a big goal below to track progress';
+$('auto').checked=!!A.auto;
+$('dPlan').disabled=!(pl>0);$('dPlanT').textContent=pl>0?f(pl)+' per week from your Savings bill':'Add a weekly Savings amount on the Bills tab.';
+[['svBal',A.bal],['gM',S.goal.m],['gT',S.goal.t]].forEach(([id,v])=>{if(document.activeElement!==$(id))$(id).value=v||''});
+if(document.activeElement!==$('gBy'))$('gBy').value=S.goal.by||'';
+let o='';
+if(t){const rem=t-tot;if(rem<=0)o='You have reached your big goal!';else{
+o=pl>0?`At ${f(pl)} per week you reach it in about ${Math.ceil(rem/pl)} weeks.`:'Add a weekly Savings amount to see a timeline.';
+if(S.goal.by){const wl=Math.ceil((new Date(S.goal.by+'T00:00:00')-new Date())/(7*864e5));
+if(wl<=0)o+=` Your target date has passed, ${f(rem)} still to go.`;else{const need=rem/wl;o+=` To finish by ${S.goal.by} you need ${f(need)} per week`+(pl>=need?'. You are on track.':`, which is ${f(need-pl)} more than planned.`)}}}}
+$('gOut').textContent=o;
+const L=$('svList');L.innerHTML=A.dep.length?'':'<p class="mu" style="margin:0">No savings logged yet.</p>';
+[...A.dep].sort((a,b)=>b.d.localeCompare(a.d)).slice(0,30).forEach(x=>{const r=document.createElement('div');r.className='fx';
+r.innerHTML=`<span class='chip'>${ic('coin')}</span><div style='flex:1'><div>${f(x.a)}</div><div class='mu'>${x.d}${x.auto?' \u00b7 auto':''}</div></div><button class='x' aria-label='Delete'>${ic('x',18)}</button>`;
+r.querySelector('button').onclick=()=>{A.dep=A.dep.filter(y=>y!==x);save();render()};L.appendChild(r)})}
+function renderWi(){const x=+$('wi').value||0,base=planned(),rem=(+S.goal.t||0)-totSaved();
+$('wiV').textContent='+'+f(x)+' / week';
+const at=w=>new Date(Date.now()+w*7*864e5).toLocaleDateString(undefined,{month:'short',year:'numeric'});
+$('wiOut').textContent=!S.goal.t?'Set a big savings goal above to try this.':rem<=0?'You have already reached your big goal.':base+x<=0?'Add a weekly Savings amount on the Bills tab, or move the slider.':(()=>{const w1=base>0?Math.ceil(rem/base):0,w2=Math.ceil(rem/(base+x));return base>0?(x===0?`At ${f(base)} per week you reach your goal in about ${w1} weeks (${at(w1)}).`:`Saving ${f(base+x)} per week gets you there in about ${w2} weeks (${at(w2)}), ${w1-w2} ${w1-w2===1?'week':'weeks'} sooner than now.`):`Saving ${f(x)} per week gets you there in about ${w2} weeks (${at(w2)}).`})()}
+function calc(){const fr=fridays(mon),inc=fr.reduce((a,d)=>a+payOn(d),0),dueOf=i=>i.f==="w"?(+i.a||0)*fr.length:(+i.a||0),
+ due=S.fixed.reduce((a,i)=>a+dueOf(i),0),sv=S.fixed.filter(i=>/saving/i.test(i.n)).reduce((a,i)=>a+dueOf(i),0),
+ ex=S.exp.filter(e=>e.d.startsWith(mon)),exs=ex.reduce((a,e)=>a+e.a,0),left=inc-due-exs,per=S.fixed.reduce((a,i)=>a+weq(i),0),g=[];
+ const saved=S.sav.dep.filter(x=>x.d.startsWith(mon)).reduce((a,x)=>a+x.a,0);if(+S.goal.m>0)g.push({n:"Monthly savings target",t:+S.goal.m,a:saved,ok:saved>=S.goal.m,ic:"coin"});
+ if(+S.goal.t>0){const p=totSaved();g.push({n:"Big savings goal",t:+S.goal.t,a:p,ok:p>=S.goal.t,ic:"target"})}
+ g.push({n:"Stay within your pay",t:0,a:left,ok:left>=0,ic:"wallet"});
+ return{fr,inc,due,dueOf,sv,saved,bills:due-sv,ex,exs,left,per,g,hit:g.filter(x=>x.ok).length}}
+function goalRows(c,el,bars){el.innerHTML="";c.g.forEach(x=>{const d=document.createElement("div");d.className="g";
+ const p=x.t?Math.min(100,Math.max(0,x.a/x.t*100)):100;
+ d.innerHTML=`<span class="chip ${x.ok?"ok":"bad"}">${ic(x.ok?"check":"x")}</span><div><div class="row" style="justify-content:space-between"><span>${x.n}</span><span class="mu">${x.t?f(x.a)+" of "+f(x.t):f(x.a)}</span></div>${bars?`<div class="bar"><i class="${x.ok?"":"o"}" style="width:${p}%"></i></div>`:""}</div>`;el.appendChild(d)})}
+function render(){
+ autoLog();const c=calc();$("mo").value=mon;
+ $("hLeft").textContent=f(c.left);$("hLeft").style.opacity=c.left<0?.8:1;$("hSub").textContent=`${c.hit} of ${c.g.length} goals hit · ${c.fr.length} paydays`;
+ $("tInc").textContent=f(c.inc);$("tSp").textContent=f(c.bills+c.exs);$("tSv").textContent=f(c.saved);$("tG").textContent=c.hit+" of "+c.g.length;
+ goalRows(c,$("gHome"),false);goalRows(c,$("gList"),true);renderUp();renderSts();renderWi();
+ renderSav();
+ if(document.activeElement!==$("pay"))$("pay").value=S.pay||"";
+ $("fri").innerHTML="";
+ c.fr.forEach(d=>{const r=document.createElement("div");r.className="fx";r.innerHTML=`<span class="chip">${ic("wallet")}</span><span style="flex:1">${d}</span><input type="number" min="0" step="any" aria-label="Pay on ${d}">`;
+  const i=r.querySelector("input");i.placeholder=f(S.pay);i.value=S.ov[d]!==undefined?S.ov[d]:"";
+  i.onchange=()=>{if(i.value==="")delete S.ov[d];else S.ov[d]=+i.value;save();render()};$("fri").appendChild(r)});
+ $("fx").innerHTML="";
+ S.fixed.forEach(it=>{const r=document.createElement("div");r.className="fx";
+  r.innerHTML=`<span class="chip">${ic(kind(it.n))}</span><input class="n" aria-label="Name"><button class="x" aria-label="Remove">${ic("x",18)}</button><input type="number" min="0" step="any" placeholder="Amount" aria-label="Amount"><select><option value="m">per month</option><option value="w">per week</option></select><input type='number' min='1' max='31' placeholder='Due day' aria-label='Due day' style='flex:0 1 84px'><span class="mu pc"></span>`;
+  const [n,a,dd]=r.querySelectorAll("input"),s=r.querySelector("select");n.value=it.n;a.value=it.a||"";dd.value=it.due||"";s.value=it.f;dd.onchange=()=>{it.due=Math.min(31,Math.max(0,Math.round(+dd.value||0)));save();render()};r.querySelector(".pc").textContent=f(weq(it))+" / check";
+  n.onchange=()=>{it.n=n.value.trim()||"Item";save();render()};a.onchange=()=>{it.a=+a.value||0;save();render()};s.onchange=()=>{it.f=s.value;save();render()};
+  r.querySelector("button").onclick=()=>{S.fixed=S.fixed.filter(x=>x!==it);save();render()};$("fx").appendChild(r)});
+ const free=(+S.pay||0)-c.per;$("bPer").textContent=f(c.per);$("bFree").textContent=f(free);$("bFree").className=free<0?"bad":"";
+ $("list").innerHTML=c.ex.length?"":'<p class="mu">No extra spending this month.</p>';
+ c.ex.sort((a,b)=>b.d.localeCompare(a.d)).forEach(e=>{const r=document.createElement("div");r.className="fx";
+  r.innerHTML=`<span class="chip">${ic("card")}</span><div style="flex:1"><div></div><div class="mu">${e.d}</div></div><b>${f(e.a)}</b><button class="x" aria-label="Delete">${ic("x",18)}</button>`;
+  r.querySelector("div div").textContent=e.n||"Expense";r.querySelector("button").onclick=()=>{S.exp=S.exp.filter(x=>x.id!==e.id);save();render()};$("list").appendChild(r)});
+ document.querySelectorAll(".v").forEach(v=>v.classList.toggle("on",v.id==="v-"+view));
+ document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===view));
+}
+const TABS=[["home","Home","home"],["pay","Pay","wallet"],["bills","Bills","list"],["spend","Spend","card"],["goals","Savings","coin"]];
+$("tabs").innerHTML=TABS.map(x=>`<button data-v="${x[0]}">${ic(x[2],22)}<span>${x[1]}</span></button>`).join("");
+$("tabs").onclick=e=>{const b=e.target.closest("button");if(b){view=b.dataset.v;render();scrollTo(0,0)}};
+document.querySelectorAll("[data-ic]").forEach(e=>e.insertAdjacentHTML("afterbegin",ic(e.dataset.ic,18)));
+$("goSpend").onclick=()=>{view="spend";render();scrollTo(0,0)};
+$("eD").value=ds(new Date());$("dD").value=ds(new Date());
+$("wi").oninput=renderWi;
+async function out(name,data){let d=null;try{d=await claude.use('downloads')}catch(e){}
+if(d){try{await d.save({filename:name,data});toast('Saved: '+name)}catch(e){toast(e&&e.code==='declined'?'Save cancelled.':'Could not save the file ('+((e&&e.code)||'error')+').',1)}}
+else if(typeof claude!=='undefined'){toast('Downloads are not available in this view. Try opening the app in a browser.',1)}
+else{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=name;a.click();toast('Saved: '+name)}}
+$('bk').onclick=()=>out('budget-backup-'+ds(new Date())+'.json',JSON.stringify({app:'budget-planner',v:1,data:S},null,1));
+$('rs').onclick=()=>$('rf').click();
+$('rf').onchange=async e=>{const fl=e.target.files[0];e.target.value='';if(!fl)return;try{const j=JSON.parse(await fl.text()),d=j&&j.data;if(!d||!Array.isArray(d.fixed)||!Array.isArray(d.exp))throw 0;try{localStorage.setItem(LK+'-prev',JSON.stringify(S))}catch(x){}S=norm(d);save();render();toast('Backup restored.')}catch(x){toast('That file is not a valid budget backup.',1)}};
+$("mo").onchange=e=>{mon=e.target.value||mon;render()};
+$("pay").onchange=e=>{S.pay=+e.target.value||0;save();render()};
+[["gM","m"],["gT","t"]].forEach(([id,k])=>$(id).onchange=e=>{S.goal[k]=+e.target.value||0;save();render()});
+$('gBy').onchange=e=>{S.goal.by=e.target.value||'';save();render()};
+$('svBal').onchange=e=>{S.sav.bal=+e.target.value||0;save();render()};
+$('auto').onchange=e=>{S.sav.auto=e.target.checked;if(S.sav.auto)S.sav.last=lastFri();save();render()};
+$('dAdd').onclick=()=>{const a=+$('dA').value;if(!(a>0))return;S.sav.dep.push({id:'m'+Date.now(),d:$('dD').value||ds(new Date()),a});$('dA').value='';save();render()};
+$('dPlan').onclick=()=>{const p=planned();if(p>0){S.sav.dep.push({id:'m'+Date.now(),d:ds(new Date()),a:+p.toFixed(2)});save();render()}};
+$("addFx").onclick=()=>{S.fixed.push({id:Date.now()+"",n:"New payment",a:0,f:"m"});save();render()};
+$("add").onclick=()=>{const a=+$("eA").value;if(!(a>0))return;S.exp.push({id:Date.now()+Math.random(),n:$("eN").value.trim(),a,d:$("eD").value||mon+"-01"});$("eN").value="";$("eA").value="";save();render()};
+$("xl").onclick=async()=>{
+ if(typeof XLSX==="undefined"){alert("Excel library did not load. Check your connection and try again.");return}
+ const c=calc(),wb=XLSX.utils.book_new(),add=(n,r,w)=>{const s=XLSX.utils.aoa_to_sheet(r);s["!cols"]=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,s,n)};
+ add("Summary",[["Budget report",mon],[],["INCOME"],["Paychecks",c.fr.length],["Total made",c.inc],[],["SPENDING"],["Fixed bills (without savings)",c.bills],["Extra spending",c.exs],["Total spent",c.bills+c.exs],[],["SAVINGS"],["Planned savings (from your bills)",c.sv],["Saved this month (logged)",c.saved],["Total saved so far",totSaved()],[],["BOTTOM LINE"],["Left over after bills, spending and savings",c.left],["Result",c.left>=0?"Within your pay":"Overspent"],[],["GOALS",c.hit+" of "+c.g.length+" hit"],["Goal","Target","Actual","Result"],...c.g.map(x=>[x.n,x.t?x.t:"Left over of 0 or more",x.a,x.ok?"Hit":"Missed"])],[44,24,14,12]);
+ add("Paychecks",[["Date","Amount"],...c.fr.map(d=>[d,payOn(d)]),["Total",c.inc]],[14,14]);
+ add("Fixed payments",[["Name","Amount","Frequency","Per paycheck","Due this month"],...S.fixed.map(i=>[i.n,+i.a||0,i.f==="w"?"Weekly":"Monthly",+weq(i).toFixed(2),c.dueOf(i)]),["Total","","",+c.per.toFixed(2),c.due]],[20,12,12,14,16]);
+ add("Savings",[["Date","Amount","Type"],...S.sav.dep.filter(d=>d.d.startsWith(mon)).sort((a,b)=>a.d.localeCompare(b.d)).map(d=>[d.d,d.a,d.auto?"Auto":"Manual"]),["Total",c.saved,""]],[14,12,10]);
+ add("Extra spending",[["Date","Description","Amount"],...c.ex.map(e=>[e.d,e.n,e.a]),["Total","",c.exs]],[14,30,12]);
+ const buf=XLSX.write(wb,{bookType:"xlsx",type:"array"}),name="budget-"+mon+".xlsx";let d=null;
+ try{d=await claude.use("downloads")}catch(e){}
+ if(d){try{await d.save({filename:name,data:buf});toast("Report ready: "+name)}catch(e){toast(e&&e.code==="declined"?"Save cancelled. Tap Excel report to try again.":"Could not save the file ("+((e&&e.code)||"error")+"). Try again, or open the app in a browser.",1)}}
+ else if(typeof claude!=="undefined"){toast("Downloads are not available in this view. Try opening the app in a browser.",1)}else{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf]));a.download=name;a.click();toast("Download started: "+name)}};
+S=norm(lsGet());lsSet();render();
+(async()=>{try{const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);if(!db||!user){$("sync").textContent=lsOk?"On this device only":"Not saved";return}
+ const id=await user.id();if(!id)return;ref=db.collection("data/users/"+id).doc("budget");
+ const snap=await ref.get();if(!dirty&&snap.exists&&snap.data()&&snap.data().json){S=norm(JSON.parse(snap.data().json));lsSet();render()}else save();
+ if(!dirty)$("sync").textContent="Synced"}catch(e){$("sync").textContent=lsOk?"On this device only":"Not saved"}finally{ready=true;render()}})();
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0&&typeof claude==='undefined')navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
